@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.UserDao">
+    <!--根据用户名查询user-->
+    <select id="findByUserName" parameterType="String" resultType="com.itheima.pojo.User">
+        select * from t_user where username = #{username}
+    </select>
+
+    <!--根据userId查询Set<Role>-->
+    <select id="findByUserId" parameterType="Integer" resultType="com.itheima.pojo.Role">
+        select * from t_role where id in (select role_id from t_user_role where user_id = #{id})
+    </select>
+
+
+    <!--添加用户-->
+    <!--获得id最大值-->
+    <select id="getMaxId" resultType="java.lang.Integer">
+        select max(id) from t_user
+    </select>
+    <insert id="addUser" parameterType="com.itheima.pojo.User">
+        insert into t_user values (#{id},#{birthday},#{gender},#{username},#{password},#{remark},#{station},#{telephone})
+    </insert>
+    <!--添加中间表-->
+    <insert id="addUser_Role" parameterType="map">
+        insert into t_user_role values (#{userId},#{roleId})
+    </insert>
+
+    <!--分页查询,填充页面-->
+    <select id="queryPage" parameterType="String" resultType="com.itheima.pojo.User">
+        select * from t_user
+        <if test="value != null and value.length>0">
+            where username like '%${value}%' or remark like '%${value}%' or telephone like '%${value}%'
+        </if>
+    </select>
+    <!--根据编辑id查询用户-->
+    <select id="findUserById" parameterType="int" resultType="com.itheima.pojo.User">
+        select * from t_user where id = #{id}
+    </select>
+    <!--根据编辑id查询中间表获得所有已关联菜单id-->
+    <select id="findRoleIdsById" parameterType="int" resultType="java.lang.Integer">
+      select role_id from t_user_role where user_id = #{id}
+    </select>
+
+    <!--修改用户数据-->
+    <update id="modifyUser" parameterType="com.itheima.pojo.User">
+        update t_user
+        <set>
+            <if test="birthday != null">
+                birthday = #{birthday},
+            </if>
+            <if test="gender != null">
+                gender = #{gender},
+            </if>
+            <if test="username != null">
+                username = #{username},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+            <if test="station != null">
+                station = #{station},
+            </if>
+            <if test="telephone != null">
+                telephone = #{telephone},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    <!--删除关联的中间表-->
+    <delete id="deleteUser_Role" parameterType="java.lang.Integer">
+        delete from t_user_role where user_id = #{id}
+    </delete>
+
+    <!--删除用户数据-->
+    <delete id="deleteUser" parameterType="int">
+        delete from t_user where id = #{id}
+    </delete>
+
+    <!--根据用户名查询用户输入密码是否正确-->
+    <select id="checkPass" parameterType="map" resultType="com.itheima.pojo.User">
+        select * from t_user where username = #{username} and telephone = #{originalPass}
+    </select>
+    <!--修改密码-->
+    <update id="modifyPass" parameterType="map">
+        update t_user set password = #{pass} where username = #{username}
+    </update>
+
+</mapper>

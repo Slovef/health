@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/mvc
+						http://www.springframework.org/schema/mvc/spring-mvc.xsd
+						http://code.alibabatech.com/schema/dubbo
+						http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+						http://www.springframework.org/schema/context
+						http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--配置包扫描-->
+    <context:component-scan base-package="com.itheima.jobs"/>
+    <!--注册自定义的Job-->
+    <bean class="com.itheima.jobs.CleanImgJob" id="CleanImg"/>
+    <bean class="com.itheima.jobs.CleanOrderJob" id="CleanOrder"/>
+    <!--注册JobDetail,作用是通过反射调用指定的Job-->
+    <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean" id="jobDetail">
+        <!--注入目标对象-->
+        <property name="targetObject" ref="CleanImg"/>
+        <!--注入目标方法-->
+        <property name="targetMethod" value="clearImgs"/>
+    </bean>
+    <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean" id="jobDetail2">
+        <!--注入目标对象-->
+        <property name="targetObject" ref="CleanOrder"/>
+        <!--注入目标方法-->
+        <property name="targetMethod" value="cleanOrderSettingOneMonthBefore"/>
+    </bean>
+    <!--注册一个触发器,指定任务触发时间-->
+    <bean class="org.springframework.scheduling.quartz.CronTriggerFactoryBean" id="cronTrigger">
+        <!--注入JobDetail-->
+        <property name="jobDetail" ref="jobDetail"/>
+        <!--指定出发时间,基于Cron表达式-->
+        <property name="cronExpression">
+            <value>0/500 * * * * ?</value>
+        </property>
+    </bean>
+    <!--注册一个触发器,指定任务触发时间-->
+    <bean class="org.springframework.scheduling.quartz.CronTriggerFactoryBean" id="cronTrigger2">
+        <!--注入JobDetail-->
+        <property name="jobDetail" ref="jobDetail2"/>
+        <!--指定出发时间,基于Cron表达式-->
+        <property name="cronExpression">
+            <!--每月最后一天的凌晨2点-->
+            <value>0 0 2 L * ? </value>
+        </property>
+    </bean>
+    <!--注册一个统一的调度工厂,通过这个调度工厂调度任务-->
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <!--注入多个触发器-->
+        <property name="triggers">
+            <list>
+                <ref bean="cronTrigger"></ref>
+                <ref bean="cronTrigger2"></ref>
+            </list>
+        </property>
+    </bean>
+</beans>
+

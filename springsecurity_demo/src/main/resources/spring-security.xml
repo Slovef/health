@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                            http://www.springframework.org/schema/beans/spring-beans.xsd
+                            http://www.springframework.org/schema/mvc
+                            http://www.springframework.org/schema/mvc/spring-mvc.xsd
+                            http://code.alibabatech.com/schema/dubbo
+                            http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+                            http://www.springframework.org/schema/context
+                            http://www.springframework.org/schema/context/spring-context.xsd
+                            http://www.springframework.org/schema/security
+                            http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <!--0.配置匿名访问-->
+    <security:http pattern="/js/**" security="none"></security:http>
+    <security:http pattern="/img/**" security="none"></security:http>
+    <security:http pattern="/css/**" security="none"></security:http>
+    <security:http pattern="/login.html" security="none"></security:http>
+    <security:http pattern="/regist.html" security="none"></security:http>
+    <security:http pattern="/fail.html" security="none"></security:http>
+
+    <!--1.配置需要权限才能访问的资源
+             auto-config属性: true 自动配置
+             use-expressions属性: false 不使用表达式
+    -->
+    <security:http auto-config="true" use-expressions="false">
+        <!--配置拦截的路径 pattern属性: 拦截的路径规则; access属性:需要什么角色才能访问-->
+        <security:intercept-url pattern="/**" access="ROLE_ADMIN"></security:intercept-url>
+
+        <!--配置自定义登录页面
+            login-page: 登录页面;
+            username-parameter:指定用户名的name;
+            password-parameter:指定密码的name;
+            login-processing-url:指定登录的action;
+            authentication-failure-url:认证失败跳转的页面
+            authentication-success-forward-url:指定登录成功跳转的页面【默认是之前访问什么页面,登录成功后就跳转什么页面】
+         -->
+        <security:form-login
+                login-page="/login.html"
+                username-parameter="username"
+                password-parameter="password"
+                login-processing-url="/login.do"
+                authentication-failure-url="/fail.html"
+                authentication-success-forward-url="/success.html"
+        />
+        <!--关闭CsrfFilter过滤器-->
+        <security:csrf disabled="true"/>
+
+        <!--配置退出登录
+            logout-url:配置退出登录的路径; logout-success-url:配置成功退出登录后,跳转的页面;
+            invalidate-session:退出登录时销毁session
+        -->
+        <security:logout logout-url="/loginout.do" logout-success-url="/login.html" invalidate-session="true"/>
+    </security:http>
+
+
+    <!--2.配置认证管理器-->
+    <security:authentication-manager>
+        <security:authentication-provider>
+            <security:user-service>
+                <!--配置账号密码，以及该账号的角色信息     name属性: 用户名; password属性:密码({noop}不加密方式);  authorities属性:赋予的角色     -->
+                <security:user name="admin" authorities="ROLE_ADMIN" password="{noop}admin"></security:user>
+            </security:user-service>
+        </security:authentication-provider>
+    </security:authentication-manager>
+</beans>

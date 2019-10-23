@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.MemberDao">
+    <!--查询当前用户是否为会员-->
+    <select id="isMemberByIdCard" parameterType="String" resultType="com.itheima.pojo.Member">
+        select * from t_member where idCard = #{idCard}
+    </select>
+    <!--添加当前用户为会员-->
+    <insert id="addMemberByMember" parameterType="com.itheima.pojo.Member" keyProperty="id" useGeneratedKeys="true">
+        insert into t_member values (#{id},#{fileNumber},#{name},#{sex},#{idCard},#{phoneNumber},#{regTime},#{password},#{email},#{birthday},#{remark})
+    </insert>
+    <!--判断该手机号是否已经注册过会员-->
+    <select id="isMemberByPhone" parameterType="String" resultType="com.itheima.pojo.Member">
+        select * from t_member where phoneNumber = #{telephone}
+    </select>
+    <!--注册新会员-->
+    <insert id="add" parameterType="com.itheima.pojo.Member">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into t_member
+        (fileNumber,name,sex,idCard,phoneNumber,regTime,password,email,birthday,remark)
+        values
+        (#{fileNumber},#{name},#{sex},#{idCard},#{phoneNumber},#{regTime},#{password},#{email},#{birthday},#{remark})
+    </insert>
+
+
+    <!--今日新增会员数-->
+    <select id="getTodayNewMember" parameterType="String" resultType="int">
+        select count(*) from t_member where regTime = #{today}
+    </select>
+    <!--总会员数-->
+    <select id="getTotalMember" resultType="int">
+        select count(*) from t_member
+    </select>
+    <!--本周新增会员数-->
+    <select id="getThisWeekNewMember" parameterType="String" resultType="int">
+        select count(*) from t_member where regTime >= #{firstDayOfWeek}
+    </select>
+    <!--本月新增会员数-->
+    <select id="findMemberCountAfterDate" parameterType="string" resultType="int">
+       select count(id) from t_member where regTime >= #{value}
+    </select>
+    <!--统计男女会员数返回制作男女会员占比饼形图-->
+    <select id="getSexCount" resultType="java.lang.Integer">
+      SELECT count(*) FROM t_member GROUP BY sex order by sex
+    </select>
+    <!--统计各年龄段会员数返回制作饼形图-->
+    <select id="getAllAge" resultType="java.lang.Integer">
+        SELECT DATE_FORMAT(FROM_DAYS(TO_DAYS(NOW())-TO_DAYS(birthday)), '%Y')+0 AS age FROM t_member WHERE birthday >0
+    </select>
+
+
+</mapper>

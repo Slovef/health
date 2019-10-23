@@ -1,0 +1,5 @@
+com\itheima\jobs\MyJobs.class
+com\itheima\jobs\CleanImgJob.class
+com\itheima\jobs\JobDemo.class
+com\itheima\jobs\CleanOrderJob.class
+com\itheima\jobs\ClearImgJob.class

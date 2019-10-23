@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.OrderSettingDao">
+    <!--查询是否有此预约-->
+    <select id="checkOrderSetting" parameterType="java.util.Date" resultType="int">
+        select count(*) from t_ordersetting where orderDate = #{orderDate}
+    </select>
+    <!--有,进行修改-->
+    <update id="updateOrderSetting" parameterType="com.itheima.pojo.OrderSetting">
+        update t_ordersetting set number = #{number} where orderDate = #{orderDate}
+    </update>
+    <!--无,进行新增-->
+    <insert id="insertOrderSetting" parameterType="com.itheima.pojo.OrderSetting">
+        insert into t_ordersetting (orderDate,number) values (#{orderDate},#{number})
+    </insert>
+    <!--查询当月所有的预约-->
+    <select id="findAllByDate" parameterType="map" resultType="com.itheima.pojo.OrderSetting">
+        select * from t_ordersetting where orderDate between #{beginDate} and #{endDate}
+    </select>
+
+
+
+    <!--根据用户手机端预约输入的日期查询有无此预约项-->
+    <select id="findByDate" parameterType="date" resultType="com.itheima.pojo.OrderSetting">
+        select * from t_ordersetting where orderDate = #{date}
+    </select>
+    <!--已预约人数+1-->
+    <update id="addOneInReservations" parameterType="com.itheima.pojo.OrderSetting">
+        update t_ordersetting set reservations = #{reservations} where orderDate = #{orderDate}
+    </update>
+
+    <!--定时清理预约设置-->
+    <delete id="cleanOrderSettingOneMonthBefore" parameterType="String">
+        delete FROM t_ordersetting WHERE orderDate LIKE '${value}%'
+    </delete>
+</mapper>

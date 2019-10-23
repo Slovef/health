@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.SetmealDao">
+    <!--查询所有的检查组返回给新增套餐显示-->
+    <select id="findAllCheckGroup" resultType="com.itheima.pojo.CheckGroup">
+        select * from t_checkgroup
+    </select>
+    <!--添加新套餐-->
+    <insert id="addSetmeal" parameterType="com.itheima.pojo.Setmeal" keyProperty="id" useGeneratedKeys="true">
+        insert into t_setmeal (name,code,helpCode,sex,age,price,remark,attention,img)
+                values (#{name},#{code},#{helpCode},#{sex},#{age},#{price},#{remark},#{attention},#{img})
+    </insert>
+    <!--添加中间表-->
+    <insert id="addSetmeal_CheckGroup" parameterType="hashmap">
+        insert into t_setmeal_checkgroup values (#{setmeal_id},#{checkgroup_id})
+    </insert>
+    <!--分页查询,填充页面-->
+    <select id="queryPage" parameterType="String" resultType="com.itheima.pojo.Setmeal">
+        select * from t_setmeal
+        <if test="value != null and value.length>0">
+            where code like '%${value}%' or name like '%${value}%' or helpCode like '%${value}%'
+        </if>
+    </select>
+    <!--根据编辑id查询检查组-->
+    <select id="findCheckgroupById" parameterType="int" resultType="com.itheima.pojo.CheckGroup">
+        select * from t_checkgroup where id = #{id}
+    </select>
+    <!--根据编辑id查询中间表获得所有的检查项id-->
+    <select id="findCheckitemIdsById" parameterType="int" resultType="java.lang.Integer">
+      select checkitem_id from t_checkgroup_checkitem where checkgroup_id = #{id}
+    </select>
+    <!--修改检查组数据-->
+    <update id="modifyCheckGroup" parameterType="com.itheima.pojo.CheckGroup">
+        update t_checkgroup
+        <set>
+            <if test="code != null">
+                code = #{code},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="helpCode != null">
+                helpCode = #{helpCode},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+            <if test="attention != null">
+                attention = #{attention},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    <!--删除关联的中间表-->
+    <delete id="deleteCheckGroup_CheckItem" parameterType="java.lang.Integer">
+        delete from t_checkgroup_checkitem where checkgroup_id = #{id}
+    </delete>
+    <!--新建关联的中间表-->
+    <insert id="addCheckGroup_CheckItem" parameterType="hashmap">
+        insert into t_checkgroup_checkitem values (#{checkgroup_id},#{checkitem_id})
+    </insert>
+    <!--删除检查组合中间表数据-->
+    <delete id="deleteCheckGroup" parameterType="int">
+        delete from t_checkgroup where id = #{id}
+    </delete>
+    <!--查询所有的套餐项-->
+    <select id="findAllSetmeal" resultType="com.itheima.pojo.Setmeal">
+      select * from t_setmeal
+    </select>
+
+
+
+    <!--点击展示套餐详情-->
+    <select id="findById"  resultMap="setmealMap">
+      select * from t_setmeal where id = #{id}
+    </select>
+    <resultMap id="setmealMap" type="com.itheima.pojo.Setmeal" extends="baseResultMap">
+        <collection property="checkGroups" ofType="com.itheima.pojo.CheckGroup" javaType="ArrayList" column="id" select="com.itheima.dao.CheckgroupDao.findCheckgroupById2"></collection>
+    </resultMap>
+    <resultMap id="baseResultMap" type="com.itheima.pojo.Setmeal">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="code" property="code"/>
+        <result column="helpCode" property="helpCode"/>
+        <result column="sex" property="sex"/>
+        <result column="age" property="age"/>
+        <result column="price" property="price"/>
+        <result column="remark" property="remark"/>
+        <result column="attention" property="attention"/>
+        <result column="img" property="img"/>
+    </resultMap>
+
+</mapper>

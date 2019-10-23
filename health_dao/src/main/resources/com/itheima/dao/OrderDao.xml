@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.OrderDao">
+
+    <!--查询当前用户是否预约过该天的套餐-->
+    <select id="isOrdered" parameterType="com.itheima.pojo.Order" resultMap="baseResultMap">
+        select * from t_order
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="memberId != null">
+                and member_id = #{memberId}
+            </if>
+            <if test="orderDate != null">
+                and orderDate = #{orderDate}
+            </if>
+            <if test="orderType != null">
+                and orderType = #{orderType}
+            </if>
+            <if test="orderStatus != null">
+                and orderStatus = #{orderStatus}
+            </if>
+            <if test="setmealId != null">
+                and setmeal_id = #{setmealId}
+            </if>
+        </where>
+    </select>
+    <resultMap id="baseResultMap" type="com.itheima.pojo.Order">
+        <id column="id" property="id"/>
+        <result column="member_id" property="memberId"/>
+        <result column="orderDate" property="orderDate"/>
+        <result column="orderType" property="orderType"/>
+        <result column="orderStatus" property="orderStatus"/>
+        <result column="setmeal_id" property="setmealId"/>
+    </resultMap>
+
+    <!--如果没有预约过,添加新的预约-->
+    <insert id="addOrderByOrder" parameterType="com.itheima.pojo.Order" keyProperty="id" useGeneratedKeys="true">
+        insert into t_order  value (#{id},#{memberId},#{orderDate},#{orderType},#{orderStatus},#{setmealId})
+    </insert>
+
+    <!--根据id查询预约Order-->
+    <select id="findById" parameterType="int" resultType="map">
+        select m.name member ,s.name setmeal,o.orderDate orderDate,o.orderType orderType from
+          t_order o,
+          t_member m,
+          t_setmeal s
+        where o.member_id=m.id and o.setmeal_id=s.id and o.id=#{id}
+    </select>
+
+    <!--各套餐预约占比饼形图-->
+    <select id="getCountOfSetmeal" resultType="map">
+        SELECT s.name , count(o.id) as value FROM t_order o ,t_setmeal s WHERE o.setmeal_id = s.id GROUP BY s.name
+    </select>
+
+    <!--热门套餐（取前4）-->
+    <select id="getHotSetmealList" resultType="map">
+        SELECT count(o.id) as setmeal_count ,s.name ,s.remark, count(o.id)/(SELECT count(*) as cc FROM t_order) as proportion FROM t_order o,t_setmeal s WHERE o.setmeal_id = s.id GROUP BY s.name LIMIT 0,4
+    </select>
+    <!--根据日期统计预约数-->
+    <select id="findOrderCountByDate" parameterType="string" resultType="int">
+        select count(id) from t_order where orderDate = #{value}
+    </select>
+    <!--根据日期统计预约数，统计指定日期之后的预约数-->
+    <select id="findOrderCountAfterDate" parameterType="string" resultType="int">
+        select count(id) from t_order where orderDate >= #{value}
+    </select>
+    <!--根据日期统计到诊数-->
+    <select id="findVisitsCountByDate" parameterType="string" resultType="int">
+      select count(id) from t_order where orderDate = #{value} and orderStatus = '已到诊'
+    </select>
+    <!--根据日期统计到诊数，统计指定日期之后的到诊数-->
+    <select id="findVisitsCountAfterDate" parameterType="string" resultType="int">
+      select count(id) from t_order where orderDate >= #{value} and orderStatus = '已到诊'
+    </select>
+
+
+
+</mapper>
